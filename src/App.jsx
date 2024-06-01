@@ -4,7 +4,7 @@ import StartButton from './components/StartButton';
 import InfoBox from './components/InfoBox';
 import QuizBox from './components/QuizBox';
 import ResultBox from './components/ResultBox';
-import questions from './data/question';
+import questions, { shuffleQuestions } from './data/question';
 
 const App = () => {
   const [quizStarted, setQuizStarted] = useState(false);
@@ -12,8 +12,10 @@ const App = () => {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showResultBox, setShowResultBox] = useState(false);
   const [score, setScore] = useState(0);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   const handleStartQuiz = () => {
+    setShuffledQuestions(shuffleQuestions([...questions]));
     setQuizStarted(true);
     setShowInfoBox(true);
   };
@@ -28,7 +30,7 @@ const App = () => {
   };
 
   const handleOptionSelect = (selectedOption) => {
-    const currentQuestionObj = questions[currentQuestion];
+    const currentQuestionObj = shuffledQuestions[currentQuestion];
     if (selectedOption === currentQuestionObj.answer) {
       setScore(score + 1);
     }
@@ -36,7 +38,7 @@ const App = () => {
 
   const handleNextQuestion = () => {
     const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < questions.length) {
+    if (nextQuestion < shuffledQuestions.length) {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowResultBox(true);
@@ -44,6 +46,7 @@ const App = () => {
   };
 
   const handleRestartQuiz = () => {
+    setShuffledQuestions(shuffleQuestions([...questions]));
     setQuizStarted(true);
     setShowResultBox(false);
     setCurrentQuestion(0);
@@ -64,17 +67,21 @@ const App = () => {
       )}
       {quizStarted && !showInfoBox && !showResultBox && (
         <QuizBox
-          question={questions[currentQuestion].question}
-          options={questions[currentQuestion].options}
-          onOptionSelect={handleOptionSelect}
+          question={shuffledQuestions[currentQuestion].question}
+          options={shuffledQuestions[currentQuestion].options}
+          answer={shuffledQuestions[currentQuestion].answer}
           timer={15} // Atur timer sesuai kebutuhan
+          currentQuestionNumber={currentQuestion + 1}
+          totalQuestions={shuffledQuestions.length}
+          onOptionSelect={handleOptionSelect}
           onNext={handleNextQuestion}
+          isLastQuestion={currentQuestion === shuffledQuestions.length - 1}
         />
       )}
       {showResultBox && (
         <ResultBox
           score={score}
-          totalQuestions={questions.length}
+          totalQuestions={shuffledQuestions.length}
           onRestart={handleRestartQuiz}
           onQuit={handleQuitQuiz}
         />

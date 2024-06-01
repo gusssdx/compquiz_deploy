@@ -1,5 +1,3 @@
-import React from 'react';
-
 const questions = [
   {
     numb: 1,
@@ -57,5 +55,9 @@ const questions = [
     ]
   },
 ];
+
+export const shuffleQuestions = (questionsArray) => {
+  return questionsArray.sort(() => Math.random() - 0.5);
+};
 
 export default questions;
