@@ -20,6 +20,16 @@ const QuizBox = ({ question, options, answer, timer, currentQuestionNumber, tota
     setIsAnswered(false);
   }, [question, timer]);
 
+  useEffect(() => {
+    let nextQuestionTimeout;
+    if (isAnswered) {
+      nextQuestionTimeout = setTimeout(() => {
+        onNext();
+      }, 3000);
+    }
+    return () => clearTimeout(nextQuestionTimeout);
+  }, [isAnswered, onNext]);
+
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
     setIsAnswered(true);

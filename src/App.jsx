@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import StartButton from './components/StartButton';
 import InfoBox from './components/InfoBox';
 import QuizBox from './components/QuizBox';
 import ResultBox from './components/ResultBox';
-import questions, { shuffleQuestions } from './data/question';
+import { useQuestions } from './data/question';
 
 const App = () => {
+  const { questions, loading, error, reloadQuestions } = useQuestions();
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showResultBox, setShowResultBox] = useState(false);
   const [score, setScore] = useState(0);
-  const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
-  const handleStartQuiz = () => {
-    setShuffledQuestions(shuffleQuestions([...questions]));
-    setQuizStarted(true);
+  const handleStartQuiz = async () => {
+    await reloadQuestions(); // Reload questions when starting the quiz
+    setCurrentQuestion(0); // Reset current question to the first one
+    setScore(0); // Reset score
     setShowInfoBox(true);
+    setQuizStarted(true); // Start quiz after loading questions
   };
 
   const handleContinue = () => {
@@ -30,7 +32,7 @@ const App = () => {
   };
 
   const handleOptionSelect = (selectedOption) => {
-    const currentQuestionObj = shuffledQuestions[currentQuestion];
+    const currentQuestionObj = questions[currentQuestion];
     if (selectedOption === currentQuestionObj.answer) {
       setScore(score + 1);
     }
@@ -38,25 +40,28 @@ const App = () => {
 
   const handleNextQuestion = () => {
     const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < shuffledQuestions.length) {
+    if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowResultBox(true);
     }
   };
 
-  const handleRestartQuiz = () => {
-    setShuffledQuestions(shuffleQuestions([...questions]));
+  const handleRestartQuiz = async () => {
+    await reloadQuestions(); // Reload questions when starting the quiz
+    setCurrentQuestion(0); // Reset current question to the first one
+    setScore(0);
     setQuizStarted(true);
     setShowResultBox(false);
-    setCurrentQuestion(0);
-    setScore(0);
   };
 
   const handleQuitQuiz = () => {
     setQuizStarted(false);
     setShowResultBox(false);
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div className="App">
@@ -67,21 +72,21 @@ const App = () => {
       )}
       {quizStarted && !showInfoBox && !showResultBox && (
         <QuizBox
-          question={shuffledQuestions[currentQuestion].question}
-          options={shuffledQuestions[currentQuestion].options}
-          answer={shuffledQuestions[currentQuestion].answer}
-          timer={15} // Atur timer sesuai kebutuhan
+          question={questions[currentQuestion].question}
+          options={questions[currentQuestion].options}
+          answer={questions[currentQuestion].answer}
+          timer={15}
           currentQuestionNumber={currentQuestion + 1}
-          totalQuestions={shuffledQuestions.length}
+          totalQuestions={questions.length}
           onOptionSelect={handleOptionSelect}
           onNext={handleNextQuestion}
-          isLastQuestion={currentQuestion === shuffledQuestions.length - 1}
+          isLastQuestion={currentQuestion === questions.length - 1}
         />
       )}
       {showResultBox && (
         <ResultBox
           score={score}
-          totalQuestions={shuffledQuestions.length}
+          totalQuestions={questions.length}
           onRestart={handleRestartQuiz}
           onQuit={handleQuitQuiz}
         />

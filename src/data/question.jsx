@@ -1,63 +1,55 @@
-const questions = [
-  {
-    numb: 1,
-    question: "What does HTML stand for?",
-    answer: "Hyper Text Markup Language",
-    options: [
-      "Hyper Text Preprocessor",
-      "Hyper Text Markup Language",
-      "Hyper Text Multiple Language",
-      "Hyper Tool Multi Language"
-    ]
-  },
-  {
-    numb: 2,
-    question: "What does CSS stand for?",
-    answer: "Cascading Style Sheet",
-    options: [
-      "Common Style Sheet",
-      "Colorful Style Sheet",
-      "Computer Style Sheet",
-      "Cascading Style Sheet"
-    ]
-  },
-  {
-    numb: 3,
-    question: "What does PHP stand for?",
-    answer: "Hypertext Preprocessor",
-    options: [
-      "Hypertext Preprocessor",
-      "Hypertext Programming",
-      "Hypertext Preprogramming",
-      "Hometext Preprocessor"
-    ]
-  },
-  {
-    numb: 4,
-    question: "What does SQL stand for?",
-    answer: "Structured Query Language",
-    options: [
-      "Stylish Question Language",
-      "Stylesheet Query Language",
-      "Statement Question Language",
-      "Structured Query Language"
-    ]
-  },
-  {
-    numb: 5,
-    question: "What does XML stand for?",
-    answer: "eXtensible Markup Language",
-    options: [
-      "eXtensible Markup Language",
-      "eXecutable Multiple Language",
-      "eXTra Multi-Program Language",
-      "eXamine Multiple Language"
-    ]
-  },
-];
+import { useState, useEffect } from 'react';
 
-export const shuffleQuestions = (questionsArray) => {
-  return questionsArray.sort(() => Math.random() - 0.5);
+const fetchQuestions = async () => {
+  const response = await fetch('https://opentdb.com/api.php?amount=20&category=18&difficulty=medium&type=multiple');
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.results.map((item, index) => ({
+    numb: index + 1,
+    question: unescapeHtml(item.question),
+    answer: unescapeHtml(item.correct_answer),
+    options: shuffleOptions(item.incorrect_answers.map(unescapeHtml).concat(unescapeHtml(item.correct_answer)))
+  }));
 };
 
-export default questions;
+const shuffleOptions = (optionsArray) => {
+  return optionsArray.sort(() => Math.random() - 0.5);
+};
+
+const unescapeHtml = (text) => {
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  return doc.documentElement.textContent;
+};
+
+// question.jsx
+
+export const useQuestions = () => {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const getQuestions = async () => {
+    try {
+      const questionsData = await fetchQuestions();
+      setQuestions(shuffleOptions(questionsData)); // Shuffle questions each time
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const cachedQuestions = localStorage.getItem('quizQuestions');
+    if (cachedQuestions) {
+      setQuestions(JSON.parse(cachedQuestions));
+      setLoading(false);
+    } else {
+      getQuestions();
+    }
+  }, []);
+
+  return { questions, loading, error, reloadQuestions: getQuestions };
+};
