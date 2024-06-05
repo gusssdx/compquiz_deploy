@@ -17,9 +17,10 @@ const App = () => {
   useEffect(() => {
     // Start quiz only when loading is false, questions are loaded, and quiz has not started yet
     if (!loading && questions.length > 0 && quizStarted) {
+      setShowInfoBox(true); // Show the InfoBox when quiz starts
     }
   }, [loading, questions, quizStarted]);
-  
+    
   const handleStartQuiz = async () => {
     await reloadQuestions(); // Reload questions when starting the quiz
     setCurrentQuestion(0); // Reset current question to the first one
