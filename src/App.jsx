@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import LoginPage from './components/LoginPage';
+import Signup from './components/Signup';
 import StartButton from './components/StartButton';
 import InfoBox from './components/InfoBox';
 import QuizBox from './components/QuizBox';
@@ -13,19 +15,29 @@ const App = () => {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showResultBox, setShowResultBox] = useState(false);
   const [score, setScore] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State untuk menandai apakah pengguna sudah login
+  const [currentPage, setCurrentPage] = useState('login'); // State untuk menandai halaman saat ini
+  const [username, setUsername] = useState('');
+  
+  const handleSignupClick = () => {
+    setCurrentPage('signup');
+  };
 
-  useEffect(() => {
-    if (!loading && questions.length > 0 && quizStarted) {
-      setShowInfoBox(true); // Show the InfoBox when quiz starts
-    }
-  }, [loading, questions, quizStarted]);
+  const handleLoginClick = () => {
+    setCurrentPage('login');
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setCurrentPage('start');
+  };
 
   const handleStartQuiz = async () => {
     if (questions.length === 0) {
       await reloadQuestions();
     }
-    setCurrentQuestion(0); // Reset current question to the first one
-    setScore(0); // Reset score
+    setCurrentQuestion(0);
+    setScore(0);
     setShowInfoBox(true);
     setQuizStarted(true);
   };
@@ -56,8 +68,8 @@ const App = () => {
   };
 
   const handleRestartQuiz = async () => {
-    await reloadQuestions(); // Reload questions when starting the quiz
-    setCurrentQuestion(0); // Reset current question to the first one
+    await reloadQuestions();
+    setCurrentQuestion(0);
     setScore(0);
     setQuizStarted(true);
     setShowResultBox(false);
@@ -73,31 +85,36 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1 className="text-3xl font-bold">CompQuiz</h1>
-      {!quizStarted && <StartButton onStart={handleStartQuiz} />}
-      {quizStarted && showInfoBox && (
-        <InfoBox onContinue={handleContinue} onExit={handleExit} />
-      )}
-      {quizStarted && !showInfoBox && !showResultBox && (
-        <QuizBox
-          question={questions[currentQuestion].question}
-          options={questions[currentQuestion].options}
-          answer={questions[currentQuestion].answer}
-          timer={15}
-          currentQuestionNumber={currentQuestion + 1}
-          totalQuestions={questions.length}
-          onOptionSelect={handleOptionSelect}
-          onNext={handleNextQuestion}
-          isLastQuestion={currentQuestion === questions.length - 1}
-        />
-      )}
-      {showResultBox && (
-        <ResultBox
-          score={score}
-          totalQuestions={questions.length}
-          onRestart={handleRestartQuiz}
-          onQuit={handleQuitQuiz}
-        />
+      {currentPage === 'login' && <LoginPage onSignupClick={handleSignupClick} onLogin={handleLogin} />}
+      {currentPage === 'signup' && <Signup onLoginClick={handleLoginClick} />}
+      {currentPage === 'start' && (
+        <>
+          {!quizStarted && <StartButton onStart={handleStartQuiz} />}
+          {quizStarted && showInfoBox && (
+            <InfoBox onContinue={handleContinue} onExit={handleExit} />
+          )}
+          {quizStarted && !showInfoBox && !showResultBox && (
+            <QuizBox
+              question={questions[currentQuestion].question}
+              options={questions[currentQuestion].options}
+              answer={questions[currentQuestion].answer}
+              timer={15}
+              currentQuestionNumber={currentQuestion + 1}
+              totalQuestions={questions.length}
+              onOptionSelect={handleOptionSelect}
+              onNext={handleNextQuestion}
+              isLastQuestion={currentQuestion === questions.length - 1}
+            />
+          )}
+          {showResultBox && (
+            <ResultBox
+              score={score}
+              totalQuestions={questions.length}
+              onRestart={handleRestartQuiz}
+              onQuit={handleQuitQuiz}
+            />
+          )}
+        </>
       )}
     </div>
   );

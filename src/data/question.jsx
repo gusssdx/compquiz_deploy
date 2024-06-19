@@ -35,9 +35,16 @@ export const useQuestions = () => {
       const questionsData = await fetchQuestions();
       setQuestions(shuffleOptions(questionsData)); // Shuffle questions each time
       setLoading(false);
+      localStorage.setItem('quizQuestions', JSON.stringify(questionsData));
     } catch (err) {
-      setError(err);
-      setLoading(false);
+      if (err.message.includes('429')) {
+        // Retry logic for rate limiting
+        console.error('Rate limit exceeded, retrying in 1 minute...');
+        setTimeout(getQuestions, 60000); // Retry after 1 minute
+      } else {
+        setError(err);
+        setLoading(false);
+      }
     }
   };
 

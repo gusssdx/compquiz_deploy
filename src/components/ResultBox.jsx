@@ -2,6 +2,8 @@ import React from 'react';
 
 const ResultBox = ({ score, totalQuestions, onRestart, onQuit }) => {
   return (
+    <div className="bg-[url('/img/cg.jpg')]"> {/* path buat background */}
+      <div className="flex justify-center items-center bg-primary min-h-screen">
     <div className="result_box bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
       <div className="icon text-green-400 text-6xl mb-4">
         <i className="fas fa-crown"></i>
@@ -20,6 +22,8 @@ const ResultBox = ({ score, totalQuestions, onRestart, onQuit }) => {
         <button className="restart bg-green-500 text-white py-2 px-4 rounded-lg" onClick={onRestart}>Replay Quiz</button>
         <button className="quit bg-red-500 text-white py-2 px-4 rounded-lg" onClick={onQuit}>Quit Quiz</button>
       </div>
+    </div>
+    </div>
     </div>
   );
 };

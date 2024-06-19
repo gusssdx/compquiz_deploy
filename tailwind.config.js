@@ -4,7 +4,11 @@ module.exports = {
     "./src/index.jsx",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        'cg': "url('/img/cg.jpg')" // path backgound
+      }
+    },
   },
   plugins: [],
 }
